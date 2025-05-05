@@ -311,37 +311,18 @@ if data is not None:
             fig_bottom.update_layout(yaxis={'categoryorder': 'total descending'}, template="plotly_white")
             st.plotly_chart(fig_bottom, use_container_width=True)
 
-        # مؤشرات سريعة للمدارس
-        st.markdown("---")
-        col1, col2, col3 = st.columns(3)
-        if not avg_school_rates.empty:
+            # إضافة تحليل إضافي
+            st.markdown("---")
+            col1, col2, col3 = st.columns(3)
+            
             with col1:
-                st.metric("أعلى معدل مدرسة", f"{avg_school_rates['متوسط المعدل'].max():.2f}")
+                st.metric("أعلى معدل مدرسة", f"{top_schools.iloc[0]['متوسط المعدل']:.2f}%", 
+                         delta=f"فرق {top_schools.iloc[0]['متوسط المعدل'] - avg_school_rates['متوسط المعدل'].mean():.2f}% عن المتوسط العام")
+            
             with col2:
-                st.metric("أدنى معدل مدرسة", f"{avg_school_rates['متوسط المعدل'].min():.2f}")
+                st.metric("أدنى معدل مدرسة", f"{bottom_schools.iloc[0]['متوسط المعدل']:.2f}%", 
+                         delta=f"فرق {bottom_schools.iloc[0]['متوسط المعدل'] - avg_school_rates['متوسط المعدل'].mean():.2f}% عن المتوسط العام",
+                         delta_color="inverse")
+            
             with col3:
-                st.metric("المتوسط العام للمدارس", f"{avg_school_rates['متوسط المعدل'].mean():.2f}")
-
-        # رسم إضافي: توزيع المعدلات المحتسبة
-        st.subheader("توزيع المعدلات المحتسبة للطلاب")
-        fig_hist = px.histogram(
-            filtered_data,
-            x="المعدل_المحتسب",
-            nbins=20,
-            title="توزيع المعدلات المحتسبة للطلاب",
-            labels={"المعدل_المحتسب": "المعدل"},
-            template="plotly_white",
-            color_discrete_sequence=['#007BFF']
-        )
-        st.plotly_chart(fig_hist, use_container_width=True)
-
-        # جدول ملون للمعدلات
-        st.subheader("جدول بيانات الطلاب بعد التصفية")
-        st.dataframe(
-            filtered_data[['اسم الطالب', 'الصف', 'المعدل_المحتسب'] + grade_columns].style
-                .background_gradient(cmap='YlGn', subset=['المعدل_المحتسب'])
-                .format({'المعدل_المحتسب': '{:.2f}'})
-        )
-
-else:
-    st.warning("لم يتم تحميل البيانات بشكل صحيح.")
+                st.metric("المتوسط العام للمدارس", f"{avg_school_rates['متوسط المعدل'].mean():.2f}%")
