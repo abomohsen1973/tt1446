@@ -91,27 +91,24 @@ else:
     data = load_data()
 
 if data is not None:
-    # ---------------------- التحسين الأول: معالجة القيم الفارغة باحترافية ----------------------
+    # تنظيف أسماء الأعمدة من الفراغات
+    data.columns = data.columns.str.strip()
+
     # فقط حذف الصفوف التي تفتقد اسم الطالب أو الصف
     data = data.dropna(subset=['اسم الطالب', 'الصف'])
 
-    # استخراج أسماء الأعمدة من A إلى S (دون تغيير الأعمدة)
-    all_cols = list(data.columns)
-    if 'A' in all_cols and 'S' in all_cols:
-        grade_columns = all_cols[all_cols.index('A'):all_cols.index('S')+1]
-    else:
-        st.error("لم يتم العثور على الأعمدة من A إلى S. يرجى التأكد من صحة الملف.")
-        st.stop()
-
-    # احتساب المعدل بتجاهل القيم الفارغة
-    data['المعدل_المحتسب'] = data[grade_columns].mean(axis=1, skipna=True)
-
-    # استخراج أسماء المواد (بدون الأعمدة الأساسية)
+    # استخراج أعمدة المواد تلقائيًا (كل الأعمدة ما عدا الأساسية)
     exclude_cols = [
         'الفصل الدراسي', 'اسم المدرسة', 'الجنس', 'اسم الطالب', 'الصف', 
         'السلوك', 'المواظبة', 'المعدل', 'المعدل_المحتسب', 'التقدير العام'
     ]
-    subjects = [col for col in grade_columns if col not in exclude_cols]
+    grade_columns = [col for col in data.columns if col not in exclude_cols]
+    if len(grade_columns) == 0:
+        st.error("لم يتم العثور على أعمدة المواد. يرجى التأكد من صحة الملف.")
+        st.stop()
+
+    # احتساب المعدل بتجاهل القيم الفارغة
+    data['المعدل_المحتسب'] = data[grade_columns].mean(axis=1, skipna=True)
 
     # تعريف الترتيب المخصص للتقديرات
     grade_order = ["ممتاز", "جيد جداً", "جيد", "مقبول"]
@@ -122,7 +119,7 @@ if data is not None:
     school = st.sidebar.selectbox("اختر المدرسة", ["كل المدارس"] + sorted(list(data["اسم المدرسة"].dropna().unique())))
     gender = st.sidebar.selectbox("اختر الجنس", ["كل الأجناس"] + sorted(list(data["الجنس"].dropna().unique())))
     grade = st.sidebar.selectbox("اختر الصف", ["كل الصفوف"] + sorted(list(data["الصف"].dropna().unique())))
-    subject = st.sidebar.selectbox("اختر المادة", ["كل المواد"] + subjects)
+    subject = st.sidebar.selectbox("اختر المادة", ["كل المواد"] + grade_columns)
 
     # ---------------------- تطبيق التصفية ----------------------
     filtered_data = data.copy()
@@ -137,7 +134,7 @@ if data is not None:
     if subject != "كل المواد":
         filtered_data = filtered_data[filtered_data[subject].notna()]
 
-    # ---------------------- التحسين الخامس: KPIs ----------------------
+    # ---------------------- KPIs ----------------------
     st.markdown("---")
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -154,14 +151,13 @@ if data is not None:
         </div>
     """, unsafe_allow_html=True)
 
-    # ---------------------- التحسين السابع: عرض الجداول والرسوم ----------------------
     if not filtered_data.empty:
         # متوسط نتائج الطلاب لكل مادة (مقسمة حسب الفصل إذا تم اختيار كل الفصول)
         st.subheader("متوسط نتائج الطلاب لكل مادة")
         if semester == "كل الفصول":
             avg_subject_scores = filtered_data.melt(
                 id_vars=['الفصل الدراسي'],
-                value_vars=subjects,
+                value_vars=grade_columns,
                 var_name='المادة',
                 value_name='الدرجة'
             ).groupby(['الفصل الدراسي', 'المادة'])['الدرجة'].mean().reset_index()
@@ -179,7 +175,7 @@ if data is not None:
             )
             fig.update_traces(texttemplate='%{text:.2f}', textposition='inside', marker=dict(line=dict(color='white', width=1)))
         else:
-            avg_subject_scores = filtered_data[subjects].mean().reset_index()
+            avg_subject_scores = filtered_data[grade_columns].mean().reset_index()
             avg_subject_scores.columns = ['المادة', 'الدرجة']
 
             fig = px.bar(
@@ -318,17 +314,13 @@ if data is not None:
         # مؤشرات سريعة للمدارس
         st.markdown("---")
         col1, col2, col3 = st.columns(3)
-        if not top_schools.empty:
+        if not avg_school_rates.empty:
             with col1:
-                st.metric("أعلى معدل مدرسة", f"{top_schools.iloc[0]['متوسط المعدل']:.2f}", 
-                    delta=f"فرق {top_schools.iloc[0]['متوسط المعدل'] - avg_school_rates['متوسط المعدل'].mean():.2f} عن المتوسط العام")
-        if not bottom_schools.empty:
+                st.metric("أعلى معدل مدرسة", f"{avg_school_rates['متوسط المعدل'].max():.2f}")
             with col2:
-                st.metric("أدنى معدل مدرسة", f"{bottom_schools.iloc[0]['متوسط المعدل']:.2f}", 
-                    delta=f"فرق {bottom_schools.iloc[0]['متوسط المعدل'] - avg_school_rates['متوسط المعدل'].mean():.2f} عن المتوسط العام",
-                    delta_color="inverse")
-        with col3:
-            st.metric("المتوسط العام للمدارس", f"{avg_school_rates['متوسط المعدل'].mean():.2f}")
+                st.metric("أدنى معدل مدرسة", f"{avg_school_rates['متوسط المعدل'].min():.2f}")
+            with col3:
+                st.metric("المتوسط العام للمدارس", f"{avg_school_rates['متوسط المعدل'].mean():.2f}")
 
         # رسم إضافي: توزيع المعدلات المحتسبة
         st.subheader("توزيع المعدلات المحتسبة للطلاب")
@@ -346,7 +338,7 @@ if data is not None:
         # جدول ملون للمعدلات
         st.subheader("جدول بيانات الطلاب بعد التصفية")
         st.dataframe(
-            filtered_data[['اسم الطالب', 'الصف', 'المعدل_المحتسب'] + subjects].style
+            filtered_data[['اسم الطالب', 'الصف', 'المعدل_المحتسب'] + grade_columns].style
                 .background_gradient(cmap='YlGn', subset=['المعدل_المحتسب'])
                 .format({'المعدل_المحتسب': '{:.2f}'})
         )
