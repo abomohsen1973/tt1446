@@ -243,85 +243,78 @@ if data is not None:
             st.plotly_chart(fig, use_container_width=True)
 
         # مؤشر متوسط المعدل للمدارس - نسخة مطورة
-        if 'المعدل' in filtered_data.columns:
-            st.subheader("تحليل أداء المدارس حسب متوسط المعدل")
-            
-            avg_school_rates = filtered_data.groupby('اسم المدرسة')['المعدل'].agg(['mean', 'count']).reset_index()
-            avg_school_rates.columns = ['اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']
-            avg_school_rates = avg_school_rates[avg_school_rates['عدد الطلاب'] >= 5]
-            
-            tab1, tab2 = st.tabs(["أفضل 20 مدرسة", "أقل 20 مدرسة"])
-            
-            with tab1:
-                top_schools = avg_school_rates.sort_values(by='متوسط المعدل', ascending=False).head(20)
-                top_schools['الترتيب'] = range(1, len(top_schools)+1)
-                
-                st.markdown("### أفضل 20 مدرسة حسب متوسط المعدل (تنازلياً)")
-                st.dataframe(
-                    top_schools[['الترتيب', 'اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']].style
-                        .format({'متوسط المعدل': '{:.2f}%'})
-                        .background_gradient(cmap='Blues', subset=['متوسط المعدل'])
-                        .set_properties(**{'text-align': 'right', 'direction': 'rtl'}),
-                    height=600
-                )
-                
-                fig_top = px.bar(
-                    top_schools,
-                    x='متوسط المعدل',
-                    y='اسم المدرسة',
-                    orientation='h',
-                    title="أفضل 20 مدرسة حسب متوسط المعدل",
-                    labels={'متوسط المعدل': 'متوسط المعدل (%)', 'اسم المدرسة': ''},
-                    color='متوسط المعدل',
-                    color_continuous_scale='Blues',
-                    text='متوسط المعدل',
-                    hover_data=['عدد الطلاب']
-                )
-                fig_top.update_traces(texttemplate='%{text:.2f}%', textposition='inside')
-                fig_top.update_layout(yaxis={'categoryorder': 'total ascending'}, template="plotly_white")
-                st.plotly_chart(fig_top, use_container_width=True)
-            
-            with tab2:
-                bottom_schools = avg_school_rates.sort_values(by='متوسط المعدل', ascending=True).head(20)
-                bottom_schools['الترتيب'] = range(1, len(bottom_schools)+1)
-                
-                st.markdown("### أقل 20 مدرسة حسب متوسط المعدل (تصاعدياً)")
-                st.dataframe(
-                    bottom_schools[['الترتيب', 'اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']].style
-                        .format({'متوسط المعدل': '{:.2f}%'})
-                        .background_gradient(cmap='Reds_r', subset=['متوسط المعدل'])
-                        .set_properties(**{'text-align': 'right', 'direction': 'rtl'}),
-                    height=600
-                )
-                
-                fig_bottom = px.bar(
-                    bottom_schools,
-                    x='متوسط المعدل',
-                    y='اسم المدرسة',
-                    orientation='h',
-                    title="أقل 20 مدرسة حسب متوسط المعدل",
-                    labels={'متوسط المعدل': 'متوسط المعدل (%)', 'اسم المدرسة': ''},
-                    color='متوسط المعدل',
-                    color_continuous_scale='Reds',
-                    text='متوسط المعدل',
-                    hover_data=['عدد الطلاب']
-                )
-                fig_bottom.update_traces(texttemplate='%{text:.2f}%', textposition='inside')
-                fig_bottom.update_layout(yaxis={'categoryorder': 'total descending'}, template="plotly_white")
-                st.plotly_chart(fig_bottom, use_container_width=True)
-            
-            # إضافة تحليل إضافي
+        st.subheader("تحليل أداء المدارس حسب متوسط المعدل")
+        avg_school_rates = filtered_data.groupby('اسم المدرسة')['المعدل_المحتسب'].agg(['mean', 'count']).reset_index()
+        avg_school_rates.columns = ['اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']
+        avg_school_rates = avg_school_rates[avg_school_rates['عدد الطلاب'] >= 5]
+
+        tab1, tab2 = st.tabs(["أفضل 20 مدرسة", "أقل 20 مدرسة"])
+        with tab1:
+            top_schools = avg_school_rates.sort_values(by='متوسط المعدل', ascending=False).head(20)
+            top_schools['الترتيب'] = range(1, len(top_schools)+1)
+            st.markdown("### أفضل 20 مدرسة حسب متوسط المعدل (تنازلياً)")
+            st.dataframe(
+                top_schools[['الترتيب', 'اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']].style
+                    .format({'متوسط المعدل': '{:.2f}'})
+                    .background_gradient(cmap='Blues', subset=['متوسط المعدل'])
+                    .set_properties(**{'text-align': 'right', 'direction': 'rtl'}),
+                height=600
+            )
+            fig_top = px.bar(
+                top_schools,
+                x='متوسط المعدل',
+                y='اسم المدرسة',
+                orientation='h',
+                title="أفضل 20 مدرسة حسب متوسط المعدل",
+                labels={'متوسط المعدل': 'متوسط المعدل', 'اسم المدرسة': ''},
+                color='متوسط المعدل',
+                color_continuous_scale='Blues',
+                text='متوسط المعدل',
+                hover_data=['عدد الطلاب']
+            )
+            fig_top.update_traces(texttemplate='%{text:.2f}', textposition='inside')
+            fig_top.update_layout(yaxis={'categoryorder': 'total ascending'}, template="plotly_white")
+            st.plotly_chart(fig_top, use_container_width=True)
+        with tab2:
+            bottom_schools = avg_school_rates.sort_values(by='متوسط المعدل', ascending=True).head(20)
+            bottom_schools['الترتيب'] = range(1, len(bottom_schools)+1)
+            st.markdown("### أقل 20 مدرسة حسب متوسط المعدل (تصاعدياً)")
+            st.dataframe(
+                bottom_schools[['الترتيب', 'اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']].style
+                    .format({'متوسط المعدل': '{:.2f}'})
+                    .background_gradient(cmap='Reds_r', subset=['متوسط المعدل'])
+                    .set_properties(**{'text-align': 'right', 'direction': 'rtl'}),
+                height=600
+            )
+            fig_bottom = px.bar(
+                bottom_schools,
+                x='متوسط المعدل',
+                y='اسم المدرسة',
+                orientation='h',
+                title="أقل 20 مدرسة حسب متوسط المعدل",
+                labels={'متوسط المعدل': 'متوسط المعدل', 'اسم المدرسة': ''},
+                color='متوسط المعدل',
+                color_continuous_scale='Reds',
+                text='متوسط المعدل',
+                hover_data=['عدد الطلاب']
+            )
+            fig_bottom.update_traces(texttemplate='%{text:.2f}', textposition='inside')
+            fig_bottom.update_layout(yaxis={'categoryorder': 'total descending'}, template="plotly_white")
+            st.plotly_chart(fig_bottom, use_container_width=True)
+
+         # إضافة تحليل إضافي
             st.markdown("---")
             col1, col2, col3 = st.columns(3)
             
-            with col1:
-                st.metric("أعلى معدل مدرسة", f"{top_schools.iloc[0]['متوسط المعدل']:.2f}%", 
+        with col1:
+           st.metric("أعلى معدل مدرسة", f"{top_schools.iloc[0]['متوسط المعدل']:.2f}%", 
                          delta=f"فرق {top_schools.iloc[0]['متوسط المعدل'] - avg_school_rates['متوسط المعدل'].mean():.2f}% عن المتوسط العام")
             
-            with col2:
-                st.metric("أدنى معدل مدرسة", f"{bottom_schools.iloc[0]['متوسط المعدل']:.2f}%", 
+        with col2:
+           st.metric("أدنى معدل مدرسة", f"{bottom_schools.iloc[0]['متوسط المعدل']:.2f}%", 
                          delta=f"فرق {bottom_schools.iloc[0]['متوسط المعدل'] - avg_school_rates['متوسط المعدل'].mean():.2f}% عن المتوسط العام",
                          delta_color="inverse")
             
-            with col3:
-                st.metric("المتوسط العام للمدارس", f"{avg_school_rates['متوسط المعدل'].mean():.2f}%")
+        with col3:
+          st.metric("المتوسط العام للمدارس", f"{avg_school_rates['متوسط المعدل'].mean():.2f}%")
+     
