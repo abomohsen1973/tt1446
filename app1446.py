@@ -134,15 +134,6 @@ if data is not None:
     if subject != "كل المواد":
         filtered_data = filtered_data[filtered_data[subject].notna()]
 
-    # ---------------------- KPIs ----------------------
-    st.markdown("---")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("أعلى معدل", f"{filtered_data['المعدل_المحتسب'].max():.2f}")
-    with col2:
-        st.metric("أدنى معدل", f"{filtered_data['المعدل_المحتسب'].min():.2f}")
-    with col3:
-        st.metric("المعدل العام", f"{filtered_data['المعدل_المحتسب'].mean():.2f}")
 
     # ---------------------- عرض عدد الطلاب بعد التصفية ----------------------
     st.markdown(f"""
@@ -311,7 +302,7 @@ if data is not None:
             fig_bottom.update_layout(yaxis={'categoryorder': 'total descending'}, template="plotly_white")
             st.plotly_chart(fig_bottom, use_container_width=True)
 
-            # إضافة تحليل إضافي
+       # إضافة تحليل إضافي
             st.markdown("---")
             col1, col2, col3 = st.columns(3)
             
@@ -326,3 +317,4 @@ if data is not None:
             
             with col3:
                 st.metric("المتوسط العام للمدارس", f"{avg_school_rates['متوسط المعدل'].mean():.2f}%")
+     
