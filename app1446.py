@@ -179,6 +179,42 @@ if data is not None:
             )
 
         st.plotly_chart(fig, use_container_width=True)
+st.markdown("---")
+st.subheader("المتوسط العام للفصول الدراسية")
+
+# حساب المتوسط لكل فصل دراسي في البيانات المصفاة
+semester_avg = filtered_data.groupby('الفصل الدراسي')['المعدل_المحتسب'].mean().reset_index()
+
+# إنشاء أعمدة لعرض المؤشرات
+col1, col2, col3 = st.columns(3)
+
+# تعبئة المؤشرات لكل فصل دراسي
+semesters = {
+    "الفصل الأول": semester_avg[semester_avg['الفصل الدراسي'] == "الأول"],
+    "الفصل الثاني": semester_avg[semester_avg['الفصل الدراسي'] == "الثاني"],
+    "الفصل الثالث": semester_avg[semester_avg['الفصل الدراسي'] == "الثالث"]
+}
+
+with col1:
+    if not semesters["الفصل الأول"].empty:
+        avg = semesters["الفصل الأول"]['المعدل_المحتسب'].values[0]
+        st.metric("متوسط الفصل الأول", f"{avg:.2f}%")
+    else:
+        st.metric("متوسط الفصل الأول", "غير متوفر")
+
+with col2:
+    if not semesters["الفصل الثاني"].empty:
+        avg = semesters["الفصل الثاني"]['المعدل_المحتسب'].values[0]
+        st.metric("متوسط الفصل الثاني", f"{avg:.2f}%")
+    else:
+        st.metric("متوسط الفصل الثاني", "غير متوفر")
+
+with col3:
+    if not semesters["الفصل الثالث"].empty:
+        avg = semesters["الفصل الثالث"]['المعدل_المحتسب'].values[0]
+        st.metric("متوسط الفصل الثالث", f"{avg:.2f}%")
+    else:
+        st.metric("متوسط الفصل الثالث", "غير متوفر")
 
         # توزيع الطلاب حسب التقديرات لكل فصل دراسي
         st.subheader("توزيع الطلاب حسب التقديرات لكل فصل دراسي")
