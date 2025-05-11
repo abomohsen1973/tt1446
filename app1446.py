@@ -240,7 +240,7 @@ else:
     st.warning("لم يتم تحميل أي بيانات!")
 
         # توزيع الطلاب حسب التقديرات لكل فصل دراسي
-        st.subheader("توزيع الطلاب حسب التقديرات لكل فصل دراسي")
+   st.subheader("توزيع الطلاب حسب التقديرات لكل فصل دراسي")
         semesters = filtered_data["الفصل الدراسي"].dropna().unique()
         for sem in semesters:
             semester_data = filtered_data[filtered_data["الفصل الدراسي"] == sem]
