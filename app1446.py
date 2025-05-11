@@ -190,9 +190,9 @@ col1, col2, col3 = st.columns(3)
 
 # تعبئة المؤشرات لكل فصل دراسي
 semesters = {
-    "الفصل الأول": semester_avg[semester_avg['الفصل الدراسي'] == "الأول"],
-    "الفصل الثاني": semester_avg[semester_avg['الفصل الدراسي'] == "الثاني"],
-    "الفصل الثالث": semester_avg[semester_avg['الفصل الدراسي'] == "الثالث"]
+    "إشعار بدرجات الفصل الدراسي الأول": semester_avg[semester_avg['الفصل الدراسي'] == "الأول"],
+    "إشعار بدرجات الفصل الدراسي الثاني": semester_avg[semester_avg['الفصل الدراسي'] == "الثاني"],
+    "إشعار بدرجات الفصل الدراسي الثالث": semester_avg[semester_avg['الفصل الدراسي'] == "الثالث"]
 }
 
 with col1:
