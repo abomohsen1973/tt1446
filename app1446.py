@@ -202,41 +202,44 @@ if data is not None:
         # الفصول المتاحة
         semesters_in_data = semester_avg['الفصل الدراسي'].tolist()
         
-        # قاموس تسميات الفصول
+        # عرض المؤشرات
         semester_names = {
             'الفصل الأول': 'إشعار بدرجات الفصل الدراسي الأول',
             'الفصل الثاني': 'إشعار بدرجات الفصل الدراسي الثاني',
             'الفصل الثالث': 'إشعار بدرجات الفصل الدراسي الثالث'
         }
         
-        # تعبئة المؤشرات
         for sem_key, sem_full in semester_names.items():
             if sem_full in semesters_in_data:
                 avg_value = semester_avg[semester_avg['الفصل الدراسي'] == sem_full]['المعدل_المحتسب'].values[0]
-                sem_display_name = sem_key.split()[-1]  # استخراج "الأول/الثاني/الثالث"
             else:
                 avg_value = None
-            
-            if sem_key == 'الفصل الأول':
-                with col1:
-                    if avg_value is not None:
-                        st.metric(f"متوسط الفصل الأول", f"{avg_value:.2f}%")
-                    else:
-                        st.metric("متوسط الفصل الأول", "غير متوفر")
-            elif sem_key == 'الفصل الثاني':
-                with col2:
-                    if avg_value is not None:
-                        st.metric(f"متوسط الفصل الثاني", f"{avg_value:.2f}%")
-                    else:
-                        st.metric("متوسط الفصل الثاني", "غير متوفر")
-            elif sem_key == 'الفصل الثالث':
-                with col3:
-                    if avg_value is not None:
-                        st.metric(f"متوسط الفصل الثالث", f"{avg_value:.2f}%")
-                    else:
-                        st.metric("متوسط الفصل الثالث", "غير متوفر")
+        
+        with col1:
+            if sem_names['الفصل الأول'] in semesters_in_data:
+                st.metric("متوسط الفصل الأول", f"{avg_value:.2f}%")
+            else:
+                st.metric("متوسط الفصل الأول", "N/A")
+        
+        with col2:
+            if sem_names['الفصل الثاني'] in semesters_in_data:
+                st.metric("متوسط الفصل الثاني", f"{avg_value:.2f}%")
+            else:
+                st.metric("متوسط الفصل الثاني", "N/A")
+        
+        with col3:
+            if sem_names['الفصل الثالث'] in semesters_in_data:
+                st.metric("متوسط الفصل الثالث", f"{avg_value:.2f}%")
+            else:
+                st.metric("متوسط الفصل الثالث", "N/A")
 
-        # ---------------------- توزيع التقديرات ----------------------
+        # ---------------------- باقي الأجزاء ----------------------
+        # ... (أضف هنا الأكواد الخاصة بالرسوم البيانية الأخرى كالمخططات الدائرية والمقارنات) ...
+        
+else:
+    st.warning("لم يتم تحميل أي بيانات!")
+
+        # توزيع الطلاب حسب التقديرات لكل فصل دراسي
         st.subheader("توزيع الطلاب حسب التقديرات لكل فصل دراسي")
         semesters = filtered_data["الفصل الدراسي"].dropna().unique()
         for sem in semesters:
@@ -266,7 +269,7 @@ if data is not None:
                 fig.update_layout(template="plotly_white")
                 st.plotly_chart(fig, use_container_width=True)
 
-        # ---------------------- مقارنة الفصول ----------------------
+        # مقارنة بين الفصول الدراسية
         st.subheader("مقارنة بين الفصول الدراسية")
         overall_grade_distribution = filtered_data.groupby('الفصل الدراسي')['التقدير العام'].value_counts().unstack(fill_value=0)
         overall_grade_distribution = overall_grade_distribution.reindex(columns=grade_order, fill_value=0)
@@ -284,7 +287,7 @@ if data is not None:
         fig.update_layout(template="plotly_white")
         st.plotly_chart(fig, use_container_width=True)
 
-        # ---------------------- تحليل المادة المحددة ----------------------
+        # تحليل أداء مادة محددة
         if subject != "كل المواد":
             st.subheader(f"تحليل أداء الطلاب في {subject}")
             subject_performance = filtered_data[[subject, 'التقدير العام']].dropna()
@@ -298,7 +301,7 @@ if data is not None:
             fig.update_layout(template="plotly_white")
             st.plotly_chart(fig, use_container_width=True)
 
-        # ---------------------- ترتيب المدارس ----------------------
+        # مؤشر متوسط المعدل للمدارس - نسخة مطورة
         st.subheader("تحليل أداء المدارس حسب متوسط المعدل")
         avg_school_rates = filtered_data.groupby('اسم المدرسة')['المعدل_المحتسب'].agg(['mean', 'count']).reset_index()
         avg_school_rates.columns = ['اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']
@@ -359,7 +362,7 @@ if data is not None:
             fig_bottom.update_layout(yaxis={'categoryorder': 'total descending'}, template="plotly_white")
             st.plotly_chart(fig_bottom, use_container_width=True)
 
-        # ---------------------- المؤشرات العامة ----------------------
+        # المؤشرات العامة (تم نقلها إلى هنا لتصبح مستقلة عن التبويبات)
         st.markdown("---")
         col1, col2, col3 = st.columns(3)
                 
@@ -374,6 +377,5 @@ if data is not None:
             
         with col3:
             st.metric("المتوسط العام للمدارس", f"{avg_school_rates['متوسط المعدل'].mean():.2f}%")
-
-else:
-    st.warning("
+    else:
+    st.warning("⚠️ لم يتم تحميل أي بيانات! الرجاء رفع ملف Excel أو التحقق من اتصال الإنترنت")
