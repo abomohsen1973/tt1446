@@ -94,13 +94,13 @@ def load_data():
 # ---------------------- واجهة المستخدم ----------------------
 st.markdown("""
     <div style='text-align: center; font-size: 36px; font-weight: bold; color: darkgreen;'>
-        لوحة تحليل أداء الطلاب
+        لوحة تحليل أداء الطلبة
     </div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
     <div style='text-align: center; font-size: 20px; color: #333333;'>
-        تحليل بيانات نتائج اختبارات الطلاب للعام الدراسي 1445هـ / 1446هـ للمرحلتين الابتدائية والمتوسطة
+        تحليل بيانات نتائج اختبارات الطلبة للعام الدراسي 1445هـ / 1446هـ للمرحلتين الابتدائية والمتوسطة
     </div>
 """, unsafe_allow_html=True)
 
@@ -158,16 +158,16 @@ if data is not None:
     if subject != "كل المواد":
         filtered_data = filtered_data[filtered_data[subject].notna()]
 
-    # ---------------------- عرض عدد الطلاب بعد التصفية ----------------------
+    # ---------------------- عرض عدد الطلبة بعد التصفية ----------------------
     st.markdown(f"""
         <div style='text-align: center; font-size: 24px; font-weight: bold; color: #007BFF;'>
-            عدد الطلاب بعد التصفية: {filtered_data['اسم الطالب'].nunique()}
+            عدد الطلبة بعد التصفية: {filtered_data['اسم الطالب'].nunique()}
         </div>
     """, unsafe_allow_html=True)
 
     if not filtered_data.empty:
-        # متوسط نتائج الطلاب لكل مادة (مقسمة حسب الفصل إذا تم اختيار كل الفصول)
-        st.subheader("متوسط نتائج الطلاب لكل مادة")
+        # متوسط نتائج الطلبة لكل مادة (مقسمة حسب الفصل إذا تم اختيار كل الفصول)
+        st.subheader("متوسط نتائج الطلبة لكل مادة")
         if semester == "كل الفصول":
             avg_subject_scores = filtered_data.melt(
                 id_vars=['الفصل الدراسي'],
@@ -182,7 +182,7 @@ if data is not None:
                 y='الدرجة',
                 color='الفصل الدراسي',
                 barmode='group',
-                title="متوسط نتائج الطلاب لكل مادة (مقسمة حسب الفصل)",
+                title="متوسط نتائج الطلبة لكل مادة (مقسمة حسب الفصل)",
                 labels={'الدرجة': 'متوسط الدرجة', 'المادة': 'المادة'},
                 text='الدرجة',
                 template="plotly_white"
@@ -196,28 +196,28 @@ if data is not None:
                 avg_subject_scores,
                 x='المادة',
                 y='الدرجة',
-                title="متوسط نتائج الطلاب لكل مادة",
+                title="متوسط نتائج الطلبة لكل مادة",
                 labels={'الدرجة': 'متوسط الدرجة', 'المادة': 'المادة'},
                 template="plotly_white"
             )
 
         st.plotly_chart(fig, use_container_width=True)
 
-        # توزيع الطلاب حسب التقديرات لكل فصل دراسي
-        st.subheader("توزيع الطلاب حسب التقديرات لكل فصل دراسي")
+        # توزيع الطلبة حسب التقديرات لكل فصل دراسي
+        st.subheader("توزيع الطلبة حسب التقديرات لكل فصل دراسي")
         semesters = filtered_data["الفصل الدراسي"].dropna().unique()
         for sem in semesters:
             semester_data = filtered_data[filtered_data["الفصل الدراسي"] == sem]
             grade_distribution = semester_data['التقدير العام'].value_counts().reindex(grade_order, fill_value=0).reset_index()
-            grade_distribution.columns = ['التقدير', 'عدد الطلاب']
+            grade_distribution.columns = ['التقدير', 'عدد الطلبة']
 
             col1, col2 = st.columns(2)
             with col1:
                 fig = px.pie(
                     grade_distribution,
-                    values='عدد الطلاب',
+                    values='عدد الطلبة',
                     names='التقدير',
-                    title=f"توزيع الطلاب حسب التقديرات في {sem}",
+                    title=f"توزيع الطلبة حسب التقديرات في {sem}",
                     hole=0.3
                 )
                 fig.update_layout(template="plotly_white")
@@ -226,9 +226,9 @@ if data is not None:
                 fig = px.bar(
                     grade_distribution,
                     x='التقدير',
-                    y='عدد الطلاب',
-                    labels={'التقدير': 'التقدير', 'عدد الطلاب': 'عدد الطلاب'},
-                    title=f"توزيع الطلاب حسب التقديرات في {sem}"
+                    y='عدد الطلبة',
+                    labels={'التقدير': 'التقدير', 'عدد الطلبة': 'عدد الطلبة'},
+                    title=f"توزيع الطلبة حسب التقديرات في {sem}"
                 )
                 fig.update_layout(template="plotly_white")
                 st.plotly_chart(fig, use_container_width=True)
@@ -237,30 +237,30 @@ if data is not None:
         st.subheader("مقارنة بين الفصول الدراسية")
         overall_grade_distribution = filtered_data.groupby('الفصل الدراسي')['التقدير العام'].value_counts().unstack(fill_value=0)
         overall_grade_distribution = overall_grade_distribution.reindex(columns=grade_order, fill_value=0)
-        melted_data = overall_grade_distribution.reset_index().melt(id_vars='الفصل الدراسي', var_name='التقدير', value_name='عدد الطلاب')
+        melted_data = overall_grade_distribution.reset_index().melt(id_vars='الفصل الدراسي', var_name='التقدير', value_name='عدد الطلبة')
 
         fig = px.bar(
             melted_data,
             x='الفصل الدراسي',
-            y='عدد الطلاب',
+            y='عدد الطلبة',
             color='التقدير',
             barmode='group',
             title="مقارنة توزيع التقديرات بين الفصول الدراسية",
-            labels={'عدد الطلاب': 'عدد الطلاب', 'التقدير': 'التقدير'}
+            labels={'عدد الطلبة': 'عدد الطلبة', 'التقدير': 'التقدير'}
         )
         fig.update_layout(template="plotly_white")
         st.plotly_chart(fig, use_container_width=True)
 
         # تحليل أداء مادة محددة
         if subject != "كل المواد":
-            st.subheader(f"تحليل أداء الطلاب في {subject}")
+            st.subheader(f"تحليل أداء الطلبة في {subject}")
             subject_performance = filtered_data[[subject, 'التقدير العام']].dropna()
             fig = px.histogram(
                 subject_performance,
                 x=subject,
                 nbins=20,
-                title=f"توزيع درجات الطلاب في {subject}",
-                labels={subject: 'الدرجة', 'count': 'عدد الطلاب'}
+                title=f"توزيع درجات الطلبة في {subject}",
+                labels={subject: 'الدرجة', 'count': 'عدد الطلبة'}
             )
             fig.update_layout(template="plotly_white")
             st.plotly_chart(fig, use_container_width=True)
@@ -268,8 +268,8 @@ if data is not None:
         # مؤشر متوسط المعدل للمدارس - نسخة مطورة
         st.subheader("تحليل أداء المدارس حسب متوسط المعدل")
         avg_school_rates = filtered_data.groupby('اسم المدرسة')['المعدل_المحتسب'].agg(['mean', 'count']).reset_index()
-        avg_school_rates.columns = ['اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']
-        avg_school_rates = avg_school_rates[avg_school_rates['عدد الطلاب'] >= 5]
+        avg_school_rates.columns = ['اسم المدرسة', 'متوسط المعدل', 'عدد الطلبة']
+        avg_school_rates = avg_school_rates[avg_school_rates['عدد الطلبة'] >= 5]
 
         tab1, tab2 = st.tabs(["أفضل 20 مدرسة", "أقل 20 مدرسة"])
         with tab1:
@@ -277,7 +277,7 @@ if data is not None:
             top_schools['الترتيب'] = range(1, len(top_schools)+1)
             st.markdown("### أفضل 20 مدرسة حسب متوسط المعدل (تنازلياً)")
             st.dataframe(
-                top_schools[['الترتيب', 'اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']].style
+                top_schools[['الترتيب', 'اسم المدرسة', 'متوسط المعدل', 'عدد الطلبة']].style
                     .format({'متوسط المعدل': '{:.2f}'})
                     .background_gradient(cmap='Blues', subset=['متوسط المعدل'])
                     .set_properties(**{'text-align': 'right', 'direction': 'rtl'}),
@@ -293,7 +293,7 @@ if data is not None:
                 color='متوسط المعدل',
                 color_continuous_scale='Blues',
                 text='متوسط المعدل',
-                hover_data=['عدد الطلاب']
+                hover_data=['عدد الطلبة']
             )
             fig_top.update_traces(texttemplate='%{text:.2f}', textposition='inside')
             fig_top.update_layout(yaxis={'categoryorder': 'total ascending'}, template="plotly_white")
@@ -304,7 +304,7 @@ if data is not None:
             bottom_schools['الترتيب'] = range(1, len(bottom_schools)+1)
             st.markdown("### أقل 20 مدرسة حسب متوسط المعدل (تصاعدياً)")
             st.dataframe(
-                bottom_schools[['الترتيب', 'اسم المدرسة', 'متوسط المعدل', 'عدد الطلاب']].style
+                bottom_schools[['الترتيب', 'اسم المدرسة', 'متوسط المعدل', 'عدد الطلبة']].style
                     .format({'متوسط المعدل': '{:.2f}'})
                     .background_gradient(cmap='Reds_r', subset=['متوسط المعدل'])
                     .set_properties(**{'text-align': 'right', 'direction': 'rtl'}),
@@ -320,7 +320,7 @@ if data is not None:
                 color='متوسط المعدل',
                 color_continuous_scale='Reds',
                 text='متوسط المعدل',
-                hover_data=['عدد الطلاب']
+                hover_data=['عدد الطلبة']
             )
             fig_bottom.update_traces(texttemplate='%{text:.2f}', textposition='inside')
             fig_bottom.update_layout(yaxis={'categoryorder': 'total descending'}, template="plotly_white")
