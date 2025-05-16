@@ -1,24 +1,25 @@
 # الأساسيات
-streamlit==1.32.2
-pandas==2.1.4
-numpy==1.26.3
-plotly==5.18.0
-openpyxl==3.1.2
-requests==2.31.0
+streamlit>=1.24.0
+pandas>=2.1.0
+numpy>=1.26.2
+plotly>=5.18.0
+openpyxl>=3.1.0        # إضافة جديدة لقراءة ملفات Excel
 
 # معالجة البيانات
-pyarrow==14.0.2
-altair==5.2.0
-Pillow==10.1.0
+pyarrow>=14.0.0
+altair>=5.5.0
 
-# الشبكات والأمان
-urllib3==2.0.7
-certifi==2023.7.22
+# أدوات الشبكات والتحميل
+requests>=2.31.0       # ضروري لتحميل الملفات من Drive
+urllib3>=2.0.0
+certifi>=2023.7.22
 
 # أدوات مساعدة
-python-dateutil==2.8.2
-pytz==2023.3.post1
+python-dateutil>=2.8.2
+pytz>=2023.3
+pillow>=10.0.0
 
-# للتطوير والتصوير
-matplotlib==3.8.2
-rich==13.7.0
+# للتطوير فقط
+rich>=13.0.0
+
+matplotlib>=3.0.0
