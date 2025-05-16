@@ -58,7 +58,6 @@ st.markdown("""
 @st.cache_data
 def load_logo():
     try:
-        # استخدام الرابط الخام للصورة في GitHub
         logo_url = "https://raw.githubusercontent.com/abomohsen1973/tt1446/main/logo.jpeg"
         urllib.request.urlretrieve(logo_url, "logo.jpeg")
         logo = Image.open("logo.jpeg")
@@ -102,7 +101,7 @@ st.markdown("""
 logo = load_logo()
 if logo is not None:
     st.sidebar.markdown('<div class="logo-container">', unsafe_allow_html=True)
-    st.sidebar.image(logo, width=200, use_column_width='always')  # عرض اللوجو بحجم مناسب
+    st.sidebar.image(logo, width=200, use_container_width=True)
     st.sidebar.markdown('</div>', unsafe_allow_html=True)
 
 # تحميل البيانات
@@ -320,7 +319,7 @@ if data is not None:
             fig_bottom.update_layout(yaxis={'categoryorder': 'total descending'}, template="plotly_white")
             st.plotly_chart(fig_bottom, use_container_width=True)
 
-        # المؤشرات العامة (تم نقلها إلى هنا لتصبح مستقلة عن التبويبات)
+        # المؤشرات العامة
         st.markdown("---")
         col1, col2, col3 = st.columns(3)
                 
