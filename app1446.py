@@ -6,6 +6,7 @@ import numpy as np
 import plotly.express as px
 from PIL import Image
 import urllib.request
+import gdown
 
 # ---------------------- إعدادات الصفحة ----------------------
 st.set_page_config(
@@ -54,13 +55,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------- تحميل اللوجو من Git ----------------------
+# ---------------------- تحميل اللوجو من Google Drive ----------------------
 @st.cache_data
 def load_logo():
     try:
-        logo_url = "https://raw.githubusercontent.com/abomohsen1973/tt1446/main/logo.jpeg"
-        urllib.request.urlretrieve(logo_url, "logo.jpeg")
-        logo = Image.open("logo.jpeg")
+        # رابط Google Drive
+        file_id = "1R0a1QTX-foStGKqWuX-NtX2FkgVQaFio"
+        url = f"https://drive.google.com/uc?id={file_id}"
+        
+        # تحميل الصورة باستخدام gdown
+        output = "logo_from_drive.png"
+        gdown.download(url, output, quiet=False)
+        
+        logo = Image.open(output)
         return logo
     except Exception as e:
         st.sidebar.error(f"حدث خطأ أثناء تحميل اللوجو: {e}")
@@ -319,7 +326,7 @@ if data is not None:
             fig_bottom.update_layout(yaxis={'categoryorder': 'total descending'}, template="plotly_white")
             st.plotly_chart(fig_bottom, use_container_width=True)
 
-        # المؤشرات العامة
+        # المؤشرات العامة (تم نقلها إلى هنا لتصبح مستقلة عن التبويبات)
         st.markdown("---")
         col1, col2, col3 = st.columns(3)
                 
