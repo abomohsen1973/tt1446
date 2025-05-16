@@ -4,6 +4,8 @@ import requests
 from io import BytesIO
 import numpy as np
 import plotly.express as px
+from PIL import Image
+import urllib.request
 
 # ---------------------- إعدادات الصفحة ----------------------
 st.set_page_config(
@@ -43,8 +45,27 @@ st.markdown("""
         background-color: #E9ECEF;
         color: black;
     }
+    .logo-container {
+        text-align: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 15px;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# ---------------------- تحميل اللوجو من Git ----------------------
+@st.cache_data
+def load_logo():
+    try:
+        # استخدام الرابط الخام للصورة في GitHub
+        logo_url = "https://raw.githubusercontent.com/abomohsen1973/tt1446/main/logo.jpeg"
+        urllib.request.urlretrieve(logo_url, "logo.jpeg")
+        logo = Image.open("logo.jpeg")
+        return logo
+    except Exception as e:
+        st.sidebar.error(f"حدث خطأ أثناء تحميل اللوجو: {e}")
+        return None
 
 # ---------------------- تحميل البيانات ----------------------
 @st.cache_data(ttl=86400)
@@ -76,6 +97,13 @@ st.markdown("""
         تحليل بيانات نتائج اختبارات الطلاب للعام الدراسي 1445هـ / 1446هـ للمرحلتين الابتدائية والمتوسطة
     </div>
 """, unsafe_allow_html=True)
+
+# تحميل اللوجو وعرضه في الجانب الأيسر
+logo = load_logo()
+if logo is not None:
+    st.sidebar.markdown('<div class="logo-container">', unsafe_allow_html=True)
+    st.sidebar.image(logo, width=200, use_column_width='always')  # عرض اللوجو بحجم مناسب
+    st.sidebar.markdown('</div>', unsafe_allow_html=True)
 
 # تحميل البيانات
 data = load_data()
@@ -123,7 +151,6 @@ if data is not None:
         filtered_data = filtered_data[filtered_data["الصف"] == grade]
     if subject != "كل المواد":
         filtered_data = filtered_data[filtered_data[subject].notna()]
-
 
     # ---------------------- عرض عدد الطلاب بعد التصفية ----------------------
     st.markdown(f"""
