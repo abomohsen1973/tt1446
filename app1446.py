@@ -91,156 +91,97 @@ else:
     data = load_data()
 
 if data is not None:
-    # تنظيف أسماء الأعمدة
+    # تنظيف أسماء الأعمدة من الفراغات
     data.columns = data.columns.str.strip()
-    
-    # حذف البيانات الناقصة
+
+    # فقط حذف الصفوف التي تفتقد اسم الطالب أو الصف
     data = data.dropna(subset=['اسم الطالب', 'الصف'])
-    
-    # تحديد أعمدة المواد
+
+    # استخراج أعمدة المواد تلقائيًا (كل الأعمدة ما عدا الأساسية)
     exclude_cols = [
         'الفصل الدراسي', 'اسم المدرسة', 'الجنس', 'اسم الطالب', 'الصف', 
         'السلوك', 'المواظبة', 'المعدل', 'المعدل_المحتسب', 'التقدير العام'
     ]
     grade_columns = [col for col in data.columns if col not in exclude_cols]
-    
     if len(grade_columns) == 0:
-        st.error("لم يتم العثور على أعمدة المواد!")
+        st.error("لم يتم العثور على أعمدة المواد. يرجى التأكد من صحة الملف.")
         st.stop()
-    
-    # حساب المعدل المحتسب
+
+    # احتساب المعدل بتجاهل القيم الفارغة
     data['المعدل_المحتسب'] = data[grade_columns].mean(axis=1, skipna=True)
-    
-    # ترتيب التقديرات
+
+    # تعريف الترتيب المخصص للتقديرات
     grade_order = ["ممتاز", "جيد جداً", "جيد", "مقبول"]
-    
-    # ---------------------- الفلاتر الجانبية ----------------------
+
+    # ---------------------- خيارات التصفية ----------------------
     st.sidebar.header("خيارات التصفية")
-    
-    # معالجة أسماء الفصول
-    semester_list = ["كل الفصول"] + sorted(data['الفصل الدراسي'].unique().tolist())
-    semester = st.sidebar.selectbox("الفصل الدراسي", semester_list)
-    
-    school_list = ["كل المدارس"] + sorted(data['اسم المدرسة'].unique().tolist())
-    school = st.sidebar.selectbox("المدرسة", school_list)
-    
-    gender_list = ["كل الأجناس"] + sorted(data['الجنس'].unique().tolist())
-    gender = st.sidebar.selectbox("الجنس", gender_list)
-    
-    grade_list = ["كل الصفوف"] + sorted(data['الصف'].unique().tolist())
-    grade = st.sidebar.selectbox("الصف", grade_list)
-    
-    subject_list = ["كل المواد"] + grade_columns
-    subject = st.sidebar.selectbox("المادة", subject_list)
-    
-    # ---------------------- تطبيق الفلاتر ----------------------
+    semester = st.sidebar.selectbox("اختر الفصل الدراسي", ["كل الفصول"] + sorted(list(data["الفصل الدراسي"].dropna().unique())))
+    school = st.sidebar.selectbox("اختر المدرسة", ["كل المدارس"] + sorted(list(data["اسم المدرسة"].dropna().unique())))
+    gender = st.sidebar.selectbox("اختر الجنس", ["كل الأجناس"] + sorted(list(data["الجنس"].dropna().unique())))
+    grade = st.sidebar.selectbox("اختر الصف", ["كل الصفوف"] + sorted(list(data["الصف"].dropna().unique())))
+    subject = st.sidebar.selectbox("اختر المادة", ["كل المواد"] + grade_columns)
+
+    # ---------------------- تطبيق التصفية ----------------------
     filtered_data = data.copy()
     if semester != "كل الفصول":
-        filtered_data = filtered_data[filtered_data['الفصل الدراسي'] == semester]
+        filtered_data = filtered_data[filtered_data["الفصل الدراسي"] == semester]
     if school != "كل المدارس":
-        filtered_data = filtered_data[filtered_data['اسم المدرسة'] == school]
+        filtered_data = filtered_data[filtered_data["اسم المدرسة"] == school]
     if gender != "كل الأجناس":
-        filtered_data = filtered_data[filtered_data['الجنس'] == gender]
+        filtered_data = filtered_data[filtered_data["الجنس"] == gender]
     if grade != "كل الصفوف":
-        filtered_data = filtered_data[filtered_data['الصف'] == grade]
+        filtered_data = filtered_data[filtered_data["الصف"] == grade]
     if subject != "كل المواد":
         filtered_data = filtered_data[filtered_data[subject].notna()]
-    
-    # ---------------------- عرض عدد الطلاب ----------------------
+
+
+    # ---------------------- عرض عدد الطلاب بعد التصفية ----------------------
     st.markdown(f"""
         <div style='text-align: center; font-size: 24px; font-weight: bold; color: #007BFF;'>
-            عدد الطلاب المصفى: {filtered_data['اسم الطالب'].nunique()}
+            عدد الطلاب بعد التصفية: {filtered_data['اسم الطالب'].nunique()}
         </div>
     """, unsafe_allow_html=True)
-    
+
     if not filtered_data.empty:
-        # ---------------------- متوسط المواد ----------------------
-        st.subheader("📈 متوسط الدرجات حسب المادة")
+        # متوسط نتائج الطلاب لكل مادة (مقسمة حسب الفصل إذا تم اختيار كل الفصول)
+        st.subheader("متوسط نتائج الطلاب لكل مادة")
         if semester == "كل الفصول":
-            melted_data = filtered_data.melt(
+            avg_subject_scores = filtered_data.melt(
                 id_vars=['الفصل الدراسي'],
                 value_vars=grade_columns,
                 var_name='المادة',
                 value_name='الدرجة'
-            )
-            avg_scores = melted_data.groupby(['الفصل الدراسي', 'المادة'])['الدرجة'].mean().reset_index()
-            
+            ).groupby(['الفصل الدراسي', 'المادة'])['الدرجة'].mean().reset_index()
+
             fig = px.bar(
-                avg_scores,
+                avg_subject_scores,
                 x='المادة',
                 y='الدرجة',
                 color='الفصل الدراسي',
                 barmode='group',
-                title="متوسط الدرجات لكل مادة (حسب الفصل)",
-                labels={'الدرجة': 'المتوسط', 'المادة': ''},
-                text_auto='.2f'
+                title="متوسط نتائج الطلاب لكل مادة (مقسمة حسب الفصل)",
+                labels={'الدرجة': 'متوسط الدرجة', 'المادة': 'المادة'},
+                text='الدرجة',
+                template="plotly_white"
             )
+            fig.update_traces(texttemplate='%{text:.2f}', textposition='inside', marker=dict(line=dict(color='white', width=1)))
         else:
-            avg_scores = filtered_data[grade_columns].mean().reset_index()
-            avg_scores.columns = ['المادة', 'الدرجة']
-            
+            avg_subject_scores = filtered_data[grade_columns].mean().reset_index()
+            avg_subject_scores.columns = ['المادة', 'الدرجة']
+
             fig = px.bar(
-                avg_scores,
+                avg_subject_scores,
                 x='المادة',
                 y='الدرجة',
-                title="متوسط الدرجات لكل مادة",
-                labels={'الدرجة': 'المتوسط', 'المادة': ''},
-                text_auto='.2f'
+                title="متوسط نتائج الطلاب لكل مادة",
+                labels={'الدرجة': 'متوسط الدرجة', 'المادة': 'المادة'},
+                template="plotly_white"
             )
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # ---------------------- مؤشرات الفصول ----------------------
-        st.markdown("---")
-        st.subheader("📊 المؤشرات العامة للفصول")
-        
-        # حساب المتوسطات
-        semester_avg = filtered_data.groupby('الفصل الدراسي')['المعدل_المحتسب'].mean().reset_index()
-        
-        # إنشاء أعمدة
-        col1, col2, col3 = st.columns(3)
-        
-        # الفصول المتاحة
-        semesters_in_data = semester_avg['الفصل الدراسي'].tolist()
-        
-        # عرض المؤشرات
-        semester_names = {
-            'الفصل الأول': 'إشعار بدرجات الفصل الدراسي الأول',
-            'الفصل الثاني': 'إشعار بدرجات الفصل الدراسي الثاني',
-            'الفصل الثالث': 'إشعار بدرجات الفصل الدراسي الثالث'
-        }
-        
-        for sem_key, sem_full in semester_names.items():
-            if sem_full in semesters_in_data:
-                avg_value = semester_avg[semester_avg['الفصل الدراسي'] == sem_full]['المعدل_المحتسب'].values[0]
-            else:
-                avg_value = None
-        
-        with col1:
-            if sem_names['الفصل الأول'] in semesters_in_data:
-                st.metric("متوسط الفصل الأول", f"{avg_value:.2f}%")
-            else:
-                st.metric("متوسط الفصل الأول", "N/A")
-        
-        with col2:
-            if sem_names['الفصل الثاني'] in semesters_in_data:
-                st.metric("متوسط الفصل الثاني", f"{avg_value:.2f}%")
-            else:
-                st.metric("متوسط الفصل الثاني", "N/A")
-        
-        with col3:
-            if sem_names['الفصل الثالث'] in semesters_in_data:
-                st.metric("متوسط الفصل الثالث", f"{avg_value:.2f}%")
-            else:
-                st.metric("متوسط الفصل الثالث", "N/A")
 
-        # ---------------------- باقي الأجزاء ----------------------
-        # ... (أضف هنا الأكواد الخاصة بالرسوم البيانية الأخرى كالمخططات الدائرية والمقارنات) ...
-        
-else:
-    st.warning("لم يتم تحميل أي بيانات!")
+        st.plotly_chart(fig, use_container_width=True)
 
         # توزيع الطلاب حسب التقديرات لكل فصل دراسي
-   st.subheader("توزيع الطلاب حسب التقديرات لكل فصل دراسي")
+        st.subheader("توزيع الطلاب حسب التقديرات لكل فصل دراسي")
         semesters = filtered_data["الفصل الدراسي"].dropna().unique()
         for sem in semesters:
             semester_data = filtered_data[filtered_data["الفصل الدراسي"] == sem]
@@ -377,5 +318,3 @@ else:
             
         with col3:
             st.metric("المتوسط العام للمدارس", f"{avg_school_rates['متوسط المعدل'].mean():.2f}%")
-        else:
-            st.warning("⚠️ لم يتم تحميل أي بيانات! الرجاء رفع ملف Excel أو التحقق من اتصال الإنترنت")
