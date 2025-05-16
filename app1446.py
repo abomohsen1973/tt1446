@@ -77,18 +77,8 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# رفع ملف Excel
-uploaded_file = st.file_uploader("رفع ملف إكسل", type=["xlsx"])
-data = None
-
-if uploaded_file is not None:
-    try:
-        data = pd.read_excel(uploaded_file)
-    except Exception as e:
-        st.error(f"خطأ في قراءة الملف: {e}")
-        st.stop()
-else:
-    data = load_data()
+# تحميل البيانات
+data = load_data()
 
 if data is not None:
     # تنظيف أسماء الأعمدة من الفراغات
